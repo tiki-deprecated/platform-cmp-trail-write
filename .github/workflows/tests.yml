@@ -22,14 +22,10 @@ jobs:
           node-version: 18
 
       - name: Run CI
-        run: |
-          cd worker/upload/
-          npm ci
+        run: npm ci
 
       - name: Run Tests
-        run: |
-          cd worker/upload/
-          npm run test
+        run: npm run test
 
       - name: Publish Results
         uses: dorny/test-reporter@v1
