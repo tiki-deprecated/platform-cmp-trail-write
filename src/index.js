@@ -3,10 +3,10 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-import * as l0Storage from "./l0Storage.js";
-import * as wasabi from "./wasabi.js";
-import * as b64 from "./b64.js";
-import * as l0Index from "./l0Index.js";
+import * as l0Storage from "./l0/storage/l0-storage.js";
+import * as wasabi from "./l0/storage/wasabi.js";
+import * as base64 from "./utils/base64.js";
+import * as l0Index from "./l0/index/l0-index.js";
 
 export default {
   async fetch(request, env, context) {
@@ -14,7 +14,7 @@ export default {
       handleMethod(request);
       const body = await handleBody(request, env);
       await handleAuth(request, env, body);
-      const contentBytes = b64.decode(body.content);
+      const contentBytes = base64.decode(body.content);
 
       const wasabiRsp = await wasabi
         .put(

@@ -1,12 +1,48 @@
 {
   "name": "l0-storage-upload",
   "version": "0.0.16",
+  "description": "Cloudflare worker for uploading blocks to TIKI's L0 Storage Service",
+  "main": "lib/index.js",
   "type": "module",
+  "scripts": {
+    "start": "wrangler dev --local",
+    "build": "tsc --project tsconfig.build.json",
+    "format": "prettier --write \"src/**/*.{ts,js}\"",
+    "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
+    "test": "jest --config jest.config.json",
+    "prepare" : "npm run build",
+    "prepublishOnly" : "npm test && npm run lint",
+    "preversion" : "npm run lint",
+    "postversion": "npm run format",
+    "deploy": "wrangler publish",
+    "clean": "tsc --build --clean"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tiki-bar/l0-storage-upload"
+  },
+  "keywords": [
+    "TIKI",
+    "L0 Storage"
+  ],
+  "author": {
+    "name": "Tiki inc.",
+    "email": "hello@mytiki.com",
+    "url": "https://mytiki.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tiki-bar/l0-storage-upload/issues"
+  },
+  "homepage": "https://github.com/tiki-bar/l0-storage-upload#readme",
   "devDependencies": {
     "@babel/core": "^7.21.3",
     "@babel/preset-env": "^7.20.2",
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.56.0",
+    "@typescript-eslint/parser": "^5.56.0",
     "babel-jest": "^29.5.0",
-    "eslint": "^8.35.0",
+    "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
@@ -16,15 +52,16 @@
     "eslint-plugin-promise": "^6.1.1",
     "jest": "^29.5.0",
     "jest-junit": "^15.0.0",
+    "ts-jest": "^29.0.5",
+    "typescript": "^5.0.2",
     "wrangler": "2.13.0"
   },
   "private": true,
-  "scripts": {
-    "start": "wrangler dev --local",
-    "deploy": "wrangler publish",
-    "test": "jest"
-  },
   "dependencies": {
     "sha3": "^2.1.4"
-  }
+  },
+  "files": [
+    "lib/**/*"
+  ],
+  "types": "lib/index.d.ts"
 }

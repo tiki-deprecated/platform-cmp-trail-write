@@ -3,7 +3,7 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-import * as b64 from "./b64.js";
+import * as base64 from "../../utils/base64.ts";
 
 export { report, decode, guardClaims };
 
@@ -35,14 +35,16 @@ async function decode(jwt, pubKey, jwtAlg) {
   const isValid = await crypto.subtle.verify(
     jwtAlg,
     cryptoKey,
-    b64.decode(signatureB64, true),
+    base64.decode(signatureB64, true).buffer,
     new TextEncoder().encode([headerB64, payloadB64].join("."))
   );
 
   if (!isValid) {
     throw new Error("Failed to validate JWT");
   }
-  return JSON.parse(new TextDecoder().decode(b64.decode(payloadB64, true)));
+  return JSON.parse(
+    new TextDecoder().decode(base64.decode(payloadB64, true).buffer)
+  );
 }
 
 function guardClaims(req, config) {

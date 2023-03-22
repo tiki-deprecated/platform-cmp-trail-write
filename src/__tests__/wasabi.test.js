@@ -3,7 +3,7 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-import * as wasabi from "../wasabi.js";
+import * as wasabi from "../l0/storage/wasabi.js";
 
 // from https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
 const testKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";

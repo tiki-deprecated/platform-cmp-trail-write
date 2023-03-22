@@ -3,12 +3,12 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-import * as b64 from "../b64.js";
+import * as base64 from "../libs/b64.js";
 
-describe("b64.js Tests", function () {
+describe("base64.ts Tests", function () {
   test("Encode Success", async () => {
     const utf8 = new TextEncoder();
-    const res = b64.encode(utf8.encode("hello world"), false, true);
+    const res = base64.encode(utf8.encode("hello world"), false, true);
     expect(res).toBe("aGVsbG8gd29ybGQ=");
   });
 

@@ -3,7 +3,7 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-import * as l0Storage from "../l0Storage.js";
+import * as l0Storage from "../l0/storage/l0-storage.js";
 
 const testKey =
   '{ "kty": "EC", "use": "sig", "crv": "P-256", "kid": "dc4bde16-1cff-4335-bd8f-e5639761fdbe", "x": "zAq5eyNt6b25XGckC5u4whIl558xs-IzogJqjygysZo", "y": "hjwlv3xt0L10XiJASkjOFHUxI_72ZeLI378trg8pN6c" }';
@@ -16,7 +16,7 @@ const testSub =
 const testExp = 1668295557;
 const testJti = "72eaa63a-193d-4550-ba3c-51abf29abb6d";
 
-describe("l0Storage.js Tests", function () {
+describe("l0-storage.js Tests", function () {
   test("Decode Success", async () => {
     const claims = await l0Storage.decode(testJwt, JSON.parse(testKey), {
       name: "ECDSA",
