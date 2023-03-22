@@ -4,7 +4,8 @@
         "es2021": true,
         "jest/globals": true
     },
-    "extends": "standard",
+    "extends": ["standard", "prettier"],
+    "plugins": ["prettier"],
     "overrides": [
         {
             "files": ["test/**"],
@@ -16,5 +17,6 @@
         "sourceType": "module"
     },
     "rules": {
+        "prettier/prettier": ["error"]
     }
 }
