@@ -3,13 +3,15 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-export { deserialize, fromCompactSize, fromBigInt };
+const textDecoder = new TextDecoder();
+
+export { deserialize, getCompactSize, toBigInt, toDate, toUtf8 };
 
 function deserialize(bytes: Uint8Array): Array<Uint8Array> {
   const extractedBytes: Array<Uint8Array> = [];
   let currentSize = 0;
   for (let i = 0; i < bytes.length; i += currentSize) {
-    currentSize = fromCompactSize(bytes.subarray(i, bytes.length));
+    currentSize = getCompactSize(bytes.subarray(i, bytes.length));
 
     const val: number = bytes[i] & 0xff;
     if (val <= 252) i++;
@@ -23,7 +25,7 @@ function deserialize(bytes: Uint8Array): Array<Uint8Array> {
   return extractedBytes;
 }
 
-function fromCompactSize(bytes: Uint8Array): number {
+function getCompactSize(bytes: Uint8Array): number {
   const size = bytes[0] & 0xff;
 
   let buffer: Uint8Array;
@@ -40,7 +42,7 @@ function fromCompactSize(bytes: Uint8Array): number {
   return value;
 }
 
-function fromBigInt(bytes: Uint8Array): bigint {
+function toBigInt(bytes: Uint8Array): bigint {
   const negative: boolean = bytes.length > 0 && (bytes[0] & 0x80) === 0x80;
   let result: bigint;
   if (bytes.length === 1) {
@@ -57,4 +59,16 @@ function fromBigInt(bytes: Uint8Array): bigint {
       ? BigInt.asIntN(8 * bytes.length, result)
       : result
     : BigInt(0);
+}
+
+function toDate(bytes: Uint8Array): Date | undefined {
+  if (bytes.length > 0) {
+    return new Date(Number(toBigInt(bytes)) * 1000);
+  }
+}
+
+function toUtf8(bytes: Uint8Array): string | undefined {
+  if (bytes.length > 0) {
+    return textDecoder.decode(bytes);
+  }
 }

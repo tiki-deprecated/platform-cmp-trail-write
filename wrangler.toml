@@ -20,7 +20,7 @@ L0_STORAGE_JWT_HASH = "SHA-256"
 L0_STORAGE_JWT_CLAIMS = "iss,iat,sub,jti,exp"
 L0_STORAGE_JWT_ISS = "com.mytiki.l0_storage"
 
-L0_INDEX_URL = "https://index.l0.mytiki.com/api/latest/report"
+L0_INDEX_URL = "https://index.l0.mytiki.com/api/latest/index"
 L0_INDEX_BUCKET = "https://bucket.storage.l0.mytiki.com"
 
 WASABI_BUCKET = "bucket.storage.l0.mytiki.com"

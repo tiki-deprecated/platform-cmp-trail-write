@@ -3,7 +3,7 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-import * as bucket from "../../l0/storage/bucket/bucket";
+import * as BucketAuth from "../../l0/storage/bucket/bucket-auth";
 
 // from https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
 const testKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
@@ -34,11 +34,11 @@ const testAuthorization =
 
 describe("Bucket Tests", function () {
   test("CanonicalRequest Success", async () => {
-    const hashedPayload = bucket.toHex(
+    const hashedPayload = BucketAuth.toHex(
       await crypto.subtle.digest("SHA-256", new TextEncoder().encode(""))
     );
 
-    const req = bucket.canonicalRequest(
+    const req = BucketAuth.canonicalRequest(
       "GET",
       "/test.txt",
       "host:examplebucket.s3.amazonaws.com" +
@@ -49,7 +49,7 @@ describe("Bucket Tests", function () {
         hashedPayload +
         "\n" +
         "x-amz-date:" +
-        bucket.toTimestamp(testDate) +
+        BucketAuth.toTimestamp(testDate) +
         "\n",
       "host;range;x-amz-content-sha256;x-amz-date",
       hashedPayload
@@ -59,7 +59,7 @@ describe("Bucket Tests", function () {
   });
 
   test("StringToSign Success", async () => {
-    const s2s = await bucket.stringToSign(
+    const s2s = await BucketAuth.stringToSign(
       testDate,
       testRegion,
       testService,
@@ -69,21 +69,24 @@ describe("Bucket Tests", function () {
   });
 
   test("Signature Success", async () => {
-    const signKey = await bucket.signingKey(
+    const signKey = await BucketAuth.signingKey(
       testKey,
       testDate,
       testRegion,
       testService
     );
-    const signature = bucket.toHex(
-      await bucket.sha256(new TextEncoder().encode(testStringToSign), signKey)
+    const signature = BucketAuth.toHex(
+      await BucketAuth.sha256(
+        new TextEncoder().encode(testStringToSign),
+        signKey
+      )
     );
     expect(signature).toBe(testSignature);
   });
 
   test("Authorization Success", async () => {
     const signedHeaders = "host;range;x-amz-content-sha256;x-amz-date";
-    const authorization = bucket.authorization(
+    const authorization = BucketAuth.authorization(
       testId,
       testDate,
       testRegion,

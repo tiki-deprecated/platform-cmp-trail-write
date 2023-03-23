@@ -3,8 +3,7 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-interface L0StorageGuardConfig {
-  claims: string;
-  iss: string;
-  clockSkew: number;
+interface L0StorageReq {
+  path: string;
+  sizeBytes: number;
 }

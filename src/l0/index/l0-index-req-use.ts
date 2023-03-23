@@ -3,8 +3,7 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-interface BucketConfig {
-  bucket: string;
-  region: string;
-  service: string;
+interface L0IndexReqUse {
+  usecase: string;
+  destination: string;
 }

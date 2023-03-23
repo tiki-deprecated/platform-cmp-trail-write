@@ -27,10 +27,10 @@ describe("Block Tests", function () {
     const enc3 = base64.decode("_Q==", true);
     const enc4 = base64.decode("Bys1dpH3Ozk=", true);
 
-    const bg1 = block.fromBigInt(enc1);
-    const bg2 = block.fromBigInt(enc2);
-    const bg3 = block.fromBigInt(enc3);
-    const bg4 = block.fromBigInt(enc4);
+    const bg1 = block.toBigInt(enc1);
+    const bg2 = block.toBigInt(enc2);
+    const bg3 = block.toBigInt(enc3);
+    const bg4 = block.toBigInt(enc4);
 
     expect(bg1).toBe(-3765189n);
     expect(bg2).toBe(3n);
@@ -49,8 +49,8 @@ describe("Block Tests", function () {
       true
     );
 
-    const size1 = block.fromCompactSize(new Uint8Array(enc1));
-    const size2 = block.fromCompactSize(new Uint8Array(enc2));
+    const size1 = block.getCompactSize(new Uint8Array(enc1));
+    const size2 = block.getCompactSize(new Uint8Array(enc2));
     const utf8 = new TextEncoder();
 
     expect(size1).toBe(utf8.encode(val1).length);
