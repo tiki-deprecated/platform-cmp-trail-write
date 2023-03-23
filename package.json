@@ -10,9 +10,9 @@
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "lint": "eslint --ignore-path .eslintignore --ext .js,.ts .",
     "test": "jest --config jest.config.json",
-    "prepare" : "npm run build",
-    "prepublishOnly" : "npm test && npm run lint",
-    "preversion" : "npm run lint",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
     "postversion": "npm run format",
     "deploy": "wrangler publish",
     "clean": "tsc --build --clean"
@@ -38,6 +38,7 @@
   "devDependencies": {
     "@babel/core": "^7.21.3",
     "@babel/preset-env": "^7.20.2",
+    "@cloudflare/workers-types": "^4.20230321.0",
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
@@ -57,11 +58,11 @@
     "wrangler": "2.13.0"
   },
   "private": true,
-  "dependencies": {
-    "sha3": "^2.1.4"
-  },
   "files": [
-    "lib/**/*"
+    "dist/**/*"
   ],
-  "types": "lib/index.d.ts"
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "js-sha3": "^0.8.0"
+  }
 }

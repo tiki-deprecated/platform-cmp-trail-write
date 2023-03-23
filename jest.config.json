@@ -10,7 +10,5 @@
     ["jest-junit", {"outputDirectory": "reports", "outputName": "report.xml"}],
     "github-actions"
   ],
-  "globals": {
-    "crypto": "require('crypto')"
-  }
+  "setupFiles": ["<rootDir>/jest.setup.js"]
 }

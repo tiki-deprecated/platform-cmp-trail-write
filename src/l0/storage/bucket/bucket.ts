@@ -10,21 +10,25 @@ export {
   canonicalRequest,
   signingKey,
   stringToSign,
-  buf2hex,
+  toHex,
   authorization,
-  date2timestamp,
-  date2datestamp,
-  hmacSha,
+  toTimestamp,
+  toDatestamp,
+  sha256,
 };
 
-async function put(key, req, config) {
+async function put(
+  key: Key,
+  req: BucketReq,
+  config: BucketConfig
+): Promise<Response> {
   if (!req.key.startsWith("/")) req.key = "/" + req.key;
   const date = new Date();
-  const hashedPayload = buf2hex(
+  const hashedPayload: string = toHex(
     await crypto.subtle.digest("SHA-256", req.file)
   );
   const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
-  const canonicalHeaders =
+  const canonicalHeaders: string =
     "host:" +
     config.bucket +
     "\n" +
@@ -32,12 +36,11 @@ async function put(key, req, config) {
     hashedPayload +
     "\n" +
     "x-amz-date:" +
-    date2timestamp(date) +
+    toTimestamp(date) +
     "\n";
-  const cReq = await canonicalRequest(
+  const cReq = canonicalRequest(
     "PUT",
     req.key,
-    undefined,
     canonicalHeaders,
     signedHeaders,
     hashedPayload
@@ -49,7 +52,7 @@ async function put(key, req, config) {
     config.region,
     config.service
   );
-  const signature = buf2hex(await hmacSha(enc.encode(s2s), signKey));
+  const signature = toHex(await sha256(enc.encode(s2s), signKey));
   const auth = authorization(
     key.id,
     date,
@@ -63,7 +66,7 @@ async function put(key, req, config) {
     method: "PUT",
     headers: {
       Authorization: auth,
-      "x-amz-date": date2timestamp(date),
+      "x-amz-date": toTimestamp(date),
       "x-amz-content-sha256": hashedPayload,
     },
     body: req.file,
@@ -71,13 +74,13 @@ async function put(key, req, config) {
 }
 
 function canonicalRequest(
-  httpMethod,
-  canonicalUri,
-  canonicalQueryString,
-  canonicalHeaders,
-  signedHeaders,
-  hashedPayload
-) {
+  httpMethod: string,
+  canonicalUri: string,
+  canonicalHeaders: string,
+  signedHeaders: string,
+  hashedPayload: string,
+  canonicalQueryString?: string
+): string {
   return [
     httpMethod,
     canonicalUri,
@@ -88,10 +91,13 @@ function canonicalRequest(
   ].join("\n");
 }
 
-async function stringToSign(date, region, service, canonicalRequest) {
-  const scope = [date2datestamp(date), region, service, "aws4_request"].join(
-    "/"
-  );
+async function stringToSign(
+  date: Date,
+  region: string,
+  service: string,
+  canonicalRequest: string
+) {
+  const scope = [toDatestamp(date), region, service, "aws4_request"].join("/");
   const hashedCanonical = await crypto.subtle.digest(
     "SHA-256",
     enc.encode(canonicalRequest)
@@ -99,28 +105,40 @@ async function stringToSign(date, region, service, canonicalRequest) {
   return (
     "AWS4-HMAC-SHA256" +
     "\n" +
-    date2timestamp(date) +
+    toTimestamp(date) +
     "\n" +
     scope +
     "\n" +
-    buf2hex(hashedCanonical)
+    toHex(hashedCanonical)
   );
 }
 
-async function signingKey(secretKey, date, region, service) {
-  const kDate = await hmacSha(
-    enc.encode(date2datestamp(date)),
+async function signingKey(
+  secretKey: string,
+  date: Date,
+  region: string,
+  service: string
+): Promise<ArrayBufferLike> {
+  const kDate = await sha256(
+    enc.encode(toDatestamp(date)),
     enc.encode("AWS4" + secretKey)
   );
-  const kRegion = await hmacSha(enc.encode(region), kDate);
-  const kService = await hmacSha(enc.encode(service), kRegion);
-  return await hmacSha(enc.encode("aws4_request"), kService);
+  const kRegion = await sha256(enc.encode(region), kDate);
+  const kService = await sha256(enc.encode(service), kRegion);
+  return await sha256(enc.encode("aws4_request"), kService);
 }
 
-function authorization(keyId, date, region, service, signedHeaders, signature) {
+function authorization(
+  keyId: string,
+  date: Date,
+  region: string,
+  service: string,
+  signedHeaders: string,
+  signature: string
+): string {
   const credential = [
     keyId,
-    date2datestamp(date),
+    toDatestamp(date),
     region,
     service,
     "aws4_request",
@@ -133,26 +151,29 @@ function authorization(keyId, date, region, service, signedHeaders, signature) {
 }
 
 // from: https://stackoverflow.com/questions/47329132/how-to-get-hmac-with-crypto-web-api
-async function hmacSha(body, key) {
+async function sha256(
+  body: ArrayBufferLike,
+  key: ArrayBufferLike
+): Promise<ArrayBufferLike> {
   const algorithm = { name: "HMAC", hash: "SHA-256" };
-  const cryptoKey = await crypto.subtle.importKey(
+  const cryptoKey: CryptoKey = await crypto.subtle.importKey(
     "raw",
     key,
     algorithm,
     false,
     ["sign"]
   );
-  return await crypto.subtle.sign(algorithm.name, cryptoKey, body);
+  return crypto.subtle.sign(algorithm.name, cryptoKey, body);
 }
 
 // from: https://stackoverflow.com/questions/40031688/javascript-arraybuffer-to-hex
-function buf2hex(buffer) {
+function toHex(buffer: ArrayBufferLike): string {
   return [...new Uint8Array(buffer)]
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
-function date2datestamp(date) {
+function toDatestamp(date: Date): string {
   return [
     date.getUTCFullYear(),
     (date.getUTCMonth() + 1).toString().padStart(2, "0"),
@@ -160,7 +181,7 @@ function date2datestamp(date) {
   ].join("");
 }
 
-function date2timestamp(date) {
+function toTimestamp(date: Date): string {
   return [
     date.getUTCFullYear(),
     (date.getUTCMonth() + 1).toString().padStart(2, "0"),
