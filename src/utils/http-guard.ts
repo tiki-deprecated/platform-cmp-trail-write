@@ -13,7 +13,16 @@ interface RequestBody {
 }
 
 function method(request: Request) {
-  if (request.method !== "PUT") {
+  if (request.method === "OPTIONS") {
+    throw Response.json(null, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Request-Method": "PUT",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
+      },
+      status: 204,
+    });
+  } else if (request.method !== "PUT") {
     throw Response.json({ message: "Not Allowed" }, { status: 405 });
   }
 }
