@@ -27,7 +27,7 @@ jobs:
 
       - name: Get version
         id: version
-        run: echo "current=$(npm pkg get version)" >> $GITHUB_OUTPUT
+        run: echo "current=$(npm pkg get version | tr -d '"')" >> $GITHUB_OUTPUT
 
       - name: Run CI
         run: npm ci
