@@ -27,7 +27,7 @@ jobs:
 
       - name: Get version
         id: version
-        run: echo "current=${npm pkg get version}" >> $GITHUB_OUTPUT
+        run: echo "current=$(npm pkg get version)" >> $GITHUB_OUTPUT
 
       - name: Run CI
         run: npm ci
@@ -54,4 +54,4 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.version.current }}
+          tag_name: ${{ steps.version.outputs.current }}
