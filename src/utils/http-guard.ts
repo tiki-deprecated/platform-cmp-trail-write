@@ -5,21 +5,17 @@
 
 import * as JWT from "./jwt";
 
-export { method, body, auth };
+export { method, body, auth, CORS };
 
 interface RequestBody {
   key: string;
   content: string;
 }
 
-function method(request: Request) {
+function method(request: Request): void {
   if (request.method === "OPTIONS") {
-    throw Response.json(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Request-Method": "PUT",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, Accept",
-      },
+    throw new Response("", {
+      headers: CORS(),
       status: 204,
     });
   } else if (request.method !== "PUT") {
@@ -93,4 +89,15 @@ async function auth(request: Request, env: Env, body: RequestBody) {
       { status: 401 }
     );
   }
+}
+
+function CORS(): Headers {
+  const headers: Headers = new Headers();
+  headers.set("Access-Control-Allow-Origin", "*");
+  headers.set("Access-Control-Request-Method", "PUT");
+  headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, Accept"
+  );
+  return headers;
 }

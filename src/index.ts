@@ -67,9 +67,11 @@ export default {
         }
       }
 
+      const headers: Headers = HttpGuard.CORS();
+      headers.set("Content-Type", "application/json");
       return new Response("", {
         status: 201,
-        headers: { "Content-Type": "application/json" },
+        headers,
       });
     } catch (error) {
       if (error instanceof Response) return error;
