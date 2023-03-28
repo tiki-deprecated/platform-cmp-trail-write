@@ -27,7 +27,7 @@ jobs:
 
       - name: Get version
         id: version
-        run: echo "current=$(npm pkg get version)" >> $GITHUB_OUTPUT
+        run: echo "current=${npm pkg get version}" >> $GITHUB_OUTPUT
 
       - name: Run CI
         run: npm ci
@@ -41,11 +41,15 @@ jobs:
             REMOTE_SECRET
             WASABI_ID
             WASABI_SECRET
+            INDEX_ID
+            INDEX_SECRET
         env:
           REMOTE_ID: ${{ secrets.WORKER_ENV_REMOTE_ID }}
           REMOTE_SECRET: ${{ secrets.WORKER_ENV_REMOTE_SECRET }}
           WASABI_ID: ${{ secrets.WORKER_ENV_WASABI_ID }}
           WASABI_SECRET: ${{ secrets.WORKER_ENV_WASABI_SECRET }}
+          INDEX_ID: ${{ secrets.WORKER_ENV_INDEX_ID }}
+          INDEX_SECRET: ${{ secrets.WORKER_ENV_INDEX_SECRET }}
 
       - name: Release
         uses: softprops/action-gh-release@v1
