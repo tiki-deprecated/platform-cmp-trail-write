@@ -1,6 +1,6 @@
 {
   "name": "l0-storage-upload",
-  "version": "0.0.16",
+  "version": "1.0.0",
   "description": "Cloudflare worker for uploading blocks to TIKI's L0 Storage Service",
   "main": "lib/index.js",
   "type": "module",
@@ -40,8 +40,8 @@
     "@babel/preset-env": "^7.20.2",
     "@cloudflare/workers-types": "^4.20230321.0",
     "@types/jest": "^29.5.0",
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
     "babel-jest": "^29.5.0",
     "eslint": "^8.36.0",
     "eslint-config-prettier": "^8.8.0",
