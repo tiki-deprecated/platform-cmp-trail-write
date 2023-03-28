@@ -94,7 +94,7 @@ async function auth(request: Request, env: Env, body: RequestBody) {
 function CORS(): Headers {
   const headers: Headers = new Headers();
   headers.set("Access-Control-Allow-Origin", "*");
-  headers.set("Access-Control-Request-Method", "PUT");
+  headers.set("Access-Control-Allow-Methods", "PUT");
   headers.set(
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, Accept"
