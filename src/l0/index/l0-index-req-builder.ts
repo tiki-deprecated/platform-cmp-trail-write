@@ -101,7 +101,7 @@ function toTitle(
   contents: Array<Uint8Array>
 ): L0IndexReqTitle {
   const jsonTags = Block.toUtf8(contents[4]);
-  const ptr = Block.toUtf8(contents[4]);
+  const ptr = Block.toUtf8(contents[1]);
   return {
     transaction: id,
     address,
