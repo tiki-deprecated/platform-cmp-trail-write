@@ -35,6 +35,7 @@ function toReq(
       titles.push(txnReq as L0IndexReqTitle);
     else licenses.push(txnReq as L0IndexReqLicense);
   }
+
   return {
     block: blockHash,
     appId,
