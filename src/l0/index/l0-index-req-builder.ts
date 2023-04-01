@@ -78,12 +78,19 @@ function toLicense(
   title: string,
   contents: Array<Uint8Array>
 ): L0IndexReqLicense {
-  const jsonUses = Block.toUtf8(contents[1]);
+  let reqUses: Array<L0IndexReqUse> | undefined;
+  const jsonUses: string | undefined = Block.toUtf8(contents[1]);
+  if (jsonUses !== undefined) {
+    const uses: Array<L0IndexBlockUses> = JSON.parse(jsonUses);
+    console.log(JSON.stringify(uses));
+    reqUses = flattenUses(uses);
+    console.log(JSON.stringify(reqUses));
+  }
   return {
     transaction: id,
     address,
     title,
-    uses: jsonUses === undefined ? undefined : JSON.parse(jsonUses),
+    uses: reqUses,
     expiry: Block.toDate(contents[4]),
   };
 }
@@ -108,4 +115,19 @@ function toId(bytes: Uint8Array): string {
   sha3.update(bytes);
   const hash: Uint8Array = new Uint8Array(sha3.arrayBuffer());
   return Base64.encode(hash, true, false);
+}
+
+function flattenUses(uses: Array<L0IndexBlockUses>): Array<L0IndexReqUse> {
+  const rsp: Array<L0IndexReqUse> = [];
+  uses.forEach((use) => {
+    use.usecases.forEach((usecase) => {
+      if (use.destinations == null) rsp.push({ usecase });
+      else {
+        use.destinations.forEach((destination) => {
+          rsp.push({ usecase, destination });
+        });
+      }
+    });
+  });
+  return rsp;
 }
