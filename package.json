@@ -37,7 +37,7 @@
   "homepage": "https://github.com/tiki-bar/l0-storage-upload#readme",
   "devDependencies": {
     "@babel/core": "^7.21.3",
-    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-env": "^7.21.4",
     "@cloudflare/workers-types": "^4.20230321.0",
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^5.57.0",
