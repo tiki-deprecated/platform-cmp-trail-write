@@ -26,6 +26,7 @@ export default {
         { id: env.WASABI_ID, secret: env.WASABI_SECRET },
         { key: body.key, file: contentBytes }
       );
+
       const versionId = wasabiRsp.headers.get("x-amz-version-id");
       if (wasabiRsp.status !== 200) {
         return Response.json(
@@ -44,13 +45,13 @@ export default {
       );
       if (l0StorageRsp.status !== 204) {
         console.log("WARNING. Failed to report usage");
-        console.log(await l0StorageRsp.json());
+        console.log(JSON.stringify(await l0StorageRsp.json()));
       }
 
       if (body.key.endsWith(".block")) {
         const l0Index: L0Index = new L0Index(
-          env.L0_INDEX_BUCKET,
-          env.L0_INDEX_URL
+          env.L0_INDEX_URL,
+          env.L0_INDEX_BUCKET
         );
 
         const l0IndexRsp: Response = await l0Index.index(
@@ -63,20 +64,20 @@ export default {
         );
         if (l0IndexRsp.status !== 204) {
           console.log("WARNING. Failed to report index");
-          console.log(await l0IndexRsp.json());
+          console.log(JSON.stringify(await l0IndexRsp.json()));
         }
       }
 
       const headers: Headers = HttpGuard.CORS();
       headers.set("Content-Type", "application/json");
-      return new Response("", {
+      return new Response(null, {
         status: 201,
         headers,
       });
     } catch (error) {
       if (error instanceof Response) return error;
       else {
-        Response.json(
+        return Response.json(
           {
             message: error as string,
           },

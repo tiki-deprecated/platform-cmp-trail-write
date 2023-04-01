@@ -14,7 +14,7 @@ interface RequestBody {
 
 function method(request: Request): void {
   if (request.method === "OPTIONS") {
-    throw new Response("", {
+    throw new Response(null, {
       headers: CORS(),
       status: 204,
     });
