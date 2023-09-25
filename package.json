@@ -55,7 +55,7 @@
     "jest-junit": "^15.0.0",
     "ts-jest": "^29.0.5",
     "typescript": "^5.0.3",
-    "wrangler": "2.13.0"
+    "wrangler": "3.9.1"
   },
   "private": true,
   "files": [
