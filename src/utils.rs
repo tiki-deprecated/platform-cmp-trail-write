@@ -4,3 +4,4 @@
  */
 
 mod compact_size;
+mod byte_helpers;

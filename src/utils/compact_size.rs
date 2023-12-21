@@ -11,7 +11,7 @@ pub fn encode(mut bytes: Vec<u8>) -> Vec<u8> {
 }
 
 /// Decodes a compact size encoded byte array
-pub fn decode(bytes: Vec<u8>) -> Vec<Vec<u8>> {
+pub fn decode(bytes: &Vec<u8>) -> Vec<Vec<u8>> {
     let mut res: Vec<Vec<u8>> = Vec::new();
     let mut i = 0;
     while i < bytes.len() {
@@ -66,6 +66,7 @@ mod tests {
     use rand::prelude::*;
     use tokio_test::assert_ok;
     use crate::utils::compact_size::{decode, encode, to_int, to_size};
+    use crate::utils::byte_helpers::{utf8_encode, utf8_decode};
 
     #[test]
     fn compact_size_under_252() {
@@ -116,15 +117,15 @@ mod tests {
         let val1 = "hello";
         let val2 = "world";
 
-        let enc1 = encode(val1.as_bytes().to_vec());
-        let enc2 = encode(val2.as_bytes().to_vec());
+        let enc1 = encode(utf8_encode(val1));
+        let enc2 = encode(utf8_encode(val2));
 
         let mut encoded = enc1.clone();
         encoded.append(&mut enc2.clone());
-        let decoded = decode(encoded);
+        let decoded = decode(&encoded);
 
-        let res1 = String::from_utf8(decoded[0].clone());
-        let res2 = String::from_utf8(decoded[1].clone());
+        let res1 = utf8_decode(decoded[0].clone());
+        let res2 = utf8_decode(decoded[1].clone());
 
         assert_ok!(&res1);
         assert_ok!(&res2);
