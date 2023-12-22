@@ -1,0 +1,24 @@
+[package]
+name = "core-trail-write"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.32.0", features = ["macros", "io-util"] }
+tokio-util = "0.7.8"
+tracing = { version = "0.1.37", features = ["log"] }
+tracing-subscriber = { version = "0.3.1", default-features = false, features = ["fmt"] }
+lambda_runtime = "0.9.0"
+aws_lambda_events = "0.13.0"
+chrono = "0.4.30"
+num-bigint = "0.4.4"
+base64 = "0.21.5"
+serde = "1.0.193"
+ring = "0.17.7"
+sha3 = "0.10.8"
+
+[dev-dependencies]
+tokio-test = "0.4.3"
+tracing-test = "0.2.4"
+rand = "0.8.5"
+uuid = { version = "1.6.1", features = ["v4"] }
