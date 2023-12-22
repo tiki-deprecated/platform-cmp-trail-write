@@ -4,3 +4,4 @@
  */
 
 mod block_model;
+mod block_service;

@@ -9,3 +9,5 @@ pub mod compact_size;
 pub mod byte_helpers;
 #[allow(unused)]
 pub mod rsa_facade;
+#[allow(unused)]
+pub mod merkle_tree;

@@ -3,6 +3,6 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-mod block;
-mod metadata;
-mod transaction;
+pub mod block;
+pub mod metadata;
+pub mod transaction;

@@ -3,4 +3,4 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-mod transaction_model;
+pub mod transaction_model;

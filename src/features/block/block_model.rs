@@ -59,16 +59,22 @@ impl BlockModel {
         Ok(BlockModel { id, version, timestamp, previous_hash, transaction_root })
     }
 
-    pub fn id_from_bytes(&mut self, bytes: &Vec<u8>) -> () {
+    pub fn set_id_from_bytes(&mut self, bytes: &Vec<u8>) -> () {
         let id = byte_helpers::sha3(bytes);
         self.id = Some(byte_helpers::base64_encode(&id));
     }
 
-    pub fn id(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn set_id(&mut self) -> Result<(), Box<dyn Error>> {
         let bytes = self.serialize()?;
-        self.id_from_bytes(&bytes);
+        self.set_id_from_bytes(&bytes);
         Ok(())
     }
+
+    pub fn id(&self) -> &Option<String> { &self.id }
+    pub fn version(&self) -> i32 { self.version }
+    pub fn timestamp(&self) -> DateTime<Utc> { self.timestamp }
+    pub fn previous_hash(&self) -> &str { &self.previous_hash }
+    pub fn transaction_root(&self) -> &str { &self.transaction_root }
 }
 
 #[cfg(test)]
@@ -94,11 +100,11 @@ mod tests {
     fn compare_id() {
         let mut block = mock_block();
         let res = block.serialize();
-        block.id_from_bytes(&res.unwrap());
+        block.set_id_from_bytes(&res.unwrap());
         assert_eq!(true, block.id.is_some());
 
         let id = block.id.clone().unwrap();
-        let res = block.id();
+        let res = block.set_id();
         assert_ok!(res);
         assert_eq!(id, block.id.unwrap());
     }

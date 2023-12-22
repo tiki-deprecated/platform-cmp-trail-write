@@ -66,16 +66,25 @@ impl TransactionModel {
         Ok(TransactionModel { id, version, address, timestamp, asset_ref, contents, user_signature, app_signature })
     }
 
-    pub fn id_from_bytes(&mut self, bytes: &Vec<u8>) -> () {
+    pub fn set_id_from_bytes(&mut self, bytes: &Vec<u8>) -> () {
         let id = byte_helpers::sha3(bytes);
         self.id = Some(byte_helpers::base64_encode(&id));
     }
 
-    pub fn id(&mut self, signer: &RsaFacade) -> Result<(), Box<dyn Error>> {
+    pub fn set_id(&mut self, signer: &RsaFacade) -> Result<(), Box<dyn Error>> {
         let bytes = TransactionModel::serialize(self, signer)?;
-        self.id_from_bytes(&bytes);
+        self.set_id_from_bytes(&bytes);
         Ok(())
     }
+
+    pub fn id(&self) -> &Option<String> { &self.id }
+    pub fn version(&self) -> i32 { self.version }
+    pub fn address(&self) -> &str { &self.address }
+    pub fn timestamp(&self) -> DateTime<Utc> { self.timestamp }
+    pub fn asset_ref(&self) -> &str { &self.asset_ref }
+    pub fn contents(&self) -> &str { &self.contents }
+    pub fn user_signature(&self) -> &str { &self.user_signature }
+    pub fn app_signature(&self) -> &Option<String> { &self.app_signature }
 }
 
 #[cfg(test)]
@@ -112,11 +121,11 @@ mod tests {
         let mut txn = mock_txn();
         let key = RsaFacade::decode(B64_KEY).unwrap();
         let res = txn.serialize(&key);
-        txn.id_from_bytes(&res.unwrap());
+        txn.set_id_from_bytes(&res.unwrap());
         assert_eq!(true, txn.id.is_some());
 
         let id = txn.id.clone().unwrap();
-        let res = txn.id(&key);
+        let res = txn.set_id(&key);
         assert_ok!(res);
         assert_eq!(id, txn.id.unwrap());
     }
