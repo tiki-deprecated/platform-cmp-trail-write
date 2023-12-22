@@ -124,8 +124,8 @@ mod tests {
         encoded.append(&mut enc2.clone());
         let decoded = decode(&encoded);
 
-        let res1 = utf8_decode(decoded[0].clone());
-        let res2 = utf8_decode(decoded[1].clone());
+        let res1 = utf8_decode(&decoded[0]);
+        let res2 = utf8_decode(&decoded[1]);
 
         assert_ok!(&res1);
         assert_ok!(&res2);

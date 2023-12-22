@@ -3,5 +3,6 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-mod compact_size;
-mod byte_helpers;
+pub mod compact_size;
+pub mod byte_helpers;
+pub mod rsa_facade;
