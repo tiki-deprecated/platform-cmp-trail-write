@@ -31,7 +31,6 @@ impl TransactionModel {
 
     pub fn serialize(&self, signer: &RsaFacade) -> Result<Vec<u8>, Box<dyn Error>> {
         let mut res = Vec::<u8>::new();
-
         let version = &BigInt::from(self.version);
         res.append(&mut compact_size::encode(byte_helpers::encode_bigint(version)));
         let address = self.address.as_str();
@@ -44,30 +43,24 @@ impl TransactionModel {
         res.append(&mut compact_size::encode(byte_helpers::base64_decode(contents)?));
         let user_signature = self.user_signature.as_str();
         res.append(&mut compact_size::encode(byte_helpers::base64_decode(user_signature)?));
-
         let app_signature = signer.sign(&res)?;
         res.append(&mut compact_size::encode(app_signature));
-
         Ok(res)
     }
 
     pub fn deserialize(bytes: &Vec<u8>, id: &str) -> Result<Self, Box<dyn Error>>  {
         let decoded = compact_size::decode(bytes);
-
         let version = byte_helpers::decode_bigint(&decoded[0]);
         let version = version.to_string().parse::<i32>()?;
         let address = byte_helpers::base64_encode(&decoded[1]);
-
         let timestamp = byte_helpers::decode_bigint(&decoded[2]);
         let timestamp =
             DateTime::from_timestamp(timestamp.to_string().parse::<i64>()?, 0)
             .ok_or("Failed to parse timestamp")?;
-
         let asset_ref = byte_helpers::utf8_decode(&decoded[3])?;
         let contents = byte_helpers::base64_encode(&decoded[4]);
         let user_signature = byte_helpers::base64_encode(&decoded[5]);
         let app_signature = byte_helpers::base64_encode(&decoded[6]);
-
         Ok(TransactionModel {
             id: Some(id.to_string()),
             version,
