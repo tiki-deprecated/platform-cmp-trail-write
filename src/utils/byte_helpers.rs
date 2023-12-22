@@ -7,6 +7,7 @@ use num_bigint::BigInt;
 use std::error::Error;
 use std::num::ParseIntError;
 use base64::{engine::general_purpose, Engine as _};
+use sha3::{Digest, Sha3_256};
 
 /// Encode a BigInt into a byte array using big-endian two's-complement
 pub fn encode_bigint(num: &BigInt) -> Vec<u8> { num.to_signed_bytes_be() }
@@ -42,4 +43,11 @@ pub fn utf8_encode(string: &str) -> Vec<u8> { string.as_bytes().to_vec() }
 /// Decodes a UTF8 byte array
 pub fn utf8_decode(bytes: &Vec<u8>) -> Result<String, Box<dyn Error>> {
     Ok(String::from_utf8(bytes.clone())?)
+}
+
+/// Calculate the SHA3-256 hash of a byte array
+pub fn sha3(message: &Vec<u8>) -> Vec<u8> {
+    let mut hasher = Sha3_256::new();
+    hasher.update(message.as_slice());
+    hasher.finalize()[..].to_vec()
 }

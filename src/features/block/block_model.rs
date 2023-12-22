@@ -19,7 +19,18 @@ pub struct BlockModel {
     transaction_root: String
 }
 
+#[allow(unused)]
 impl BlockModel {
+    pub fn new(previous_hash: &str, transaction_root: &str) -> Self {
+        BlockModel {
+            id: None,
+            version: current_version(),
+            timestamp: Utc::now(),
+            previous_hash: previous_hash.to_string(),
+            transaction_root: transaction_root.to_string()
+        }
+    }
+
     pub fn serialize(&self) -> Result<Vec<u8>, Box<dyn Error>> {
         let mut res = Vec::<u8>::new();
         let version = &BigInt::from(self.version);
@@ -33,7 +44,9 @@ impl BlockModel {
         Ok(res)
     }
 
-    pub fn deserialize(bytes: &Vec<u8>, id: String) -> Result<Self, Box<dyn Error>> {
+    pub fn deserialize(bytes: &Vec<u8>) -> Result<Self, Box<dyn Error>> {
+        let id = byte_helpers::sha3(bytes);
+        let id = Some(byte_helpers::base64_encode(&id));
         let decoded = compact_size::decode(bytes);
         let version = byte_helpers::decode_bigint(&decoded[0]);
         let version = version.to_string().parse::<i32>()?;
@@ -43,12 +56,65 @@ impl BlockModel {
                 .ok_or("Failed to parse timestamp")?;
         let previous_hash = byte_helpers::base64_encode(&decoded[2]);
         let transaction_root = byte_helpers::base64_encode(&decoded[3]);
-        Ok(BlockModel {
-            id: Some(id),
-            version,
-            timestamp,
-            previous_hash,
-            transaction_root
-        })
+        Ok(BlockModel { id, version, timestamp, previous_hash, transaction_root })
+    }
+
+    pub fn id_from_bytes(&mut self, bytes: &Vec<u8>) -> () {
+        let id = byte_helpers::sha3(bytes);
+        self.id = Some(byte_helpers::base64_encode(&id));
+    }
+
+    pub fn id(&mut self) -> Result<(), Box<dyn Error>> {
+        let bytes = self.serialize()?;
+        self.id_from_bytes(&bytes);
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tokio_test::assert_ok;
+    use crate::features::block::block_model::BlockModel;
+    use crate::utils::byte_helpers;
+    fn mock_block() -> BlockModel {
+        BlockModel::new(
+            &byte_helpers::base64_encode(&byte_helpers::utf8_encode("DUMMY PREVIOUS HASH")),
+            &byte_helpers::base64_encode(&byte_helpers::utf8_encode("DUMMY TRANSACTION ROOT"))
+        )
+    }
+
+    #[test]
+    fn serialize() {
+        let block = mock_block();
+        let res = block.serialize();
+        assert_ok!(&res);
+    }
+
+    #[test]
+    fn compare_id() {
+        let mut block = mock_block();
+        let res = block.serialize();
+        block.id_from_bytes(&res.unwrap());
+        assert_eq!(true, block.id.is_some());
+
+        let id = block.id.clone().unwrap();
+        let res = block.id();
+        assert_ok!(res);
+        assert_eq!(id, block.id.unwrap());
+    }
+
+    #[test]
+    fn deserialize() {
+        let block = mock_block();
+        let serialized = block.serialize().unwrap();
+        let res = BlockModel::deserialize(&serialized);
+
+        assert_ok!(&res);
+        let res = res.unwrap();
+        assert_eq!(true, res.id.is_some());
+        assert_eq!(block.version, res.version);
+        assert_eq!(block.timestamp.timestamp(), res.timestamp.timestamp());
+        assert_eq!(block.previous_hash, res.previous_hash);
+        assert_eq!(block.transaction_root, res.transaction_root);
     }
 }

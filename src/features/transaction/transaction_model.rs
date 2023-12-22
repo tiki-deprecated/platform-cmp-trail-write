@@ -27,8 +27,8 @@ pub struct TransactionModel {
     app_signature: Option<String>
 }
 
+#[allow(unused)]
 impl TransactionModel {
-
     pub fn serialize(&self, signer: &RsaFacade) -> Result<Vec<u8>, Box<dyn Error>> {
         let mut res = Vec::<u8>::new();
         let version = &BigInt::from(self.version);
@@ -48,7 +48,9 @@ impl TransactionModel {
         Ok(res)
     }
 
-    pub fn deserialize(bytes: &Vec<u8>, id: &str) -> Result<Self, Box<dyn Error>>  {
+    pub fn deserialize(bytes: &Vec<u8>) -> Result<Self, Box<dyn Error>>  {
+        let id = byte_helpers::sha3(bytes);
+        let id = Some(byte_helpers::base64_encode(&id));
         let decoded = compact_size::decode(bytes);
         let version = byte_helpers::decode_bigint(&decoded[0]);
         let version = version.to_string().parse::<i32>()?;
@@ -60,17 +62,19 @@ impl TransactionModel {
         let asset_ref = byte_helpers::utf8_decode(&decoded[3])?;
         let contents = byte_helpers::base64_encode(&decoded[4]);
         let user_signature = byte_helpers::base64_encode(&decoded[5]);
-        let app_signature = byte_helpers::base64_encode(&decoded[6]);
-        Ok(TransactionModel {
-            id: Some(id.to_string()),
-            version,
-            address,
-            timestamp,
-            asset_ref,
-            contents,
-            user_signature,
-            app_signature: Some(app_signature)
-        })
+        let app_signature = Some(byte_helpers::base64_encode(&decoded[6]));
+        Ok(TransactionModel { id, version, address, timestamp, asset_ref, contents, user_signature, app_signature })
+    }
+
+    pub fn id_from_bytes(&mut self, bytes: &Vec<u8>) -> () {
+        let id = byte_helpers::sha3(bytes);
+        self.id = Some(byte_helpers::base64_encode(&id));
+    }
+
+    pub fn id(&mut self, signer: &RsaFacade) -> Result<(), Box<dyn Error>> {
+        let bytes = TransactionModel::serialize(self, signer)?;
+        self.id_from_bytes(&bytes);
+        Ok(())
     }
 }
 
@@ -104,16 +108,29 @@ mod tests {
     }
 
     #[test]
+    fn compare_id() {
+        let mut txn = mock_txn();
+        let key = RsaFacade::decode(B64_KEY).unwrap();
+        let res = txn.serialize(&key);
+        txn.id_from_bytes(&res.unwrap());
+        assert_eq!(true, txn.id.is_some());
+
+        let id = txn.id.clone().unwrap();
+        let res = txn.id(&key);
+        assert_ok!(res);
+        assert_eq!(id, txn.id.unwrap());
+    }
+
+    #[test]
     fn deserialize() {
         let txn = mock_txn();
         let key = RsaFacade::decode(B64_KEY).unwrap();
         let serialized = txn.serialize(&key).unwrap();
-        let id = "DUMMY ID";
-        let res = TransactionModel::deserialize(&serialized, id);
+        let res = TransactionModel::deserialize(&serialized);
 
         assert_ok!(&res);
         let res = res.unwrap();
-        assert_eq!(id, res.id.unwrap());
+        assert_eq!(true, res.id.is_some());
         assert_eq!(txn.version, res.version);
         assert_eq!(txn.address, res.address);
         assert_eq!(txn.timestamp.timestamp(), res.timestamp.timestamp());
