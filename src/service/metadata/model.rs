@@ -25,6 +25,7 @@ pub struct Model {
     created: DateTime<Utc>
 }
 
+#[allow(unused)]
 impl Model {
     pub async fn write(
         client: &S3Client,
@@ -62,5 +63,5 @@ impl Model {
     pub fn modified(&self) -> DateTime<Utc> { self.modified }
     pub fn created(&self) -> DateTime<Utc> { self.created }
 
-    fn path(provider: &str, address: &str) -> String { format!("{}/{}.json", provider, address) }
+    fn path(provider: &str, address: &str) -> String { format!("providers/{}/{}/metadata.json", provider, address) }
 }

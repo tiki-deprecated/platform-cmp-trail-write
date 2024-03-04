@@ -42,7 +42,7 @@ impl Service {
     pub async fn write(&self, owner: &Owner, transactions: &Vec<Transaction>) -> Result<(), Box<dyn Error>> {
         let mut metadata = Metadata::get(&self.client, owner).await?;
         let signer = metadata.signers()
-            .get(metadata.signers().len())
+            .get(metadata.signers().len() - 1)
             .ok_or(format!("No signer found for provider: {}", owner.provider()))?;
         let mut block = Block::new(&owner, metadata.last_block());
         for transaction in transactions {

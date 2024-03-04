@@ -16,6 +16,7 @@ pub struct Model {
     created: DateTime<Utc>,
 }
 
+#[allow(unused)]
 impl Model {
     pub async fn write(client: &S3Client, path: &str, key: &str) -> Result<Self, Box<dyn Error>> {
         let model = Self { key: key.to_string(), created: Utc::now() };

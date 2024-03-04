@@ -14,6 +14,7 @@ pub struct ModelSigner {
     created: DateTime<Utc>,
 }
 
+#[allow(unused)]
 impl ModelSigner {
     pub fn new(uri: &str, created: DateTime<Utc>) -> Self { 
         Self { uri: uri.to_string(), created } 

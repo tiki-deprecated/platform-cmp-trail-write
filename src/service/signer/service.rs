@@ -15,6 +15,7 @@ pub struct Service {
     uri: String
 }
 
+#[allow(unused)]
 impl Service {
     pub async fn create(client: &S3Client, owner: &Owner, key: &str) -> Result<Self, Box<dyn Error>> {
         let path = Self::path(owner.provider());
@@ -70,5 +71,5 @@ impl Service {
         }
     }
 
-    fn path(provider: &str) -> String { format!("{}.key", provider) }
+    fn path(provider: &str) -> String { format!("providers/{}/sign.json", provider) }
 }

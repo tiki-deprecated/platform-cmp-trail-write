@@ -32,9 +32,19 @@ pub fn base64_encode(bytes: &Vec<u8>) -> String {
     general_purpose::STANDARD.encode(bytes)
 }
 
-/// Decodes a url encoded base64 string
+/// Encodes a byte array as a URL safe base64 string
+pub fn base64url_encode(bytes: &Vec<u8>) -> String {
+    general_purpose::URL_SAFE_NO_PAD.encode(bytes)
+}
+
+/// Decodes a base64 string
 pub fn base64_decode(string: &str) -> Result<Vec<u8>, Box<dyn Error>> {
     Ok(general_purpose::STANDARD.decode(string)?)
+}
+
+/// Decodes a url encoded base64 string
+pub fn base64url_decode(string: &str) -> Result<Vec<u8>, Box<dyn Error>> {
+    Ok(general_purpose::URL_SAFE_NO_PAD.decode(string)?)
 }
 
 /// Encodes a UTF8 string as a byte array

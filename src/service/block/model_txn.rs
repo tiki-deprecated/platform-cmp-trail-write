@@ -23,6 +23,7 @@ pub struct ModelTxn {
     bytes: Vec<u8>
 }
 
+#[allow(unused)]
 impl ModelTxn {
     pub fn new(
         address: &str, 
@@ -36,7 +37,7 @@ impl ModelTxn {
         let version = current_version();
         let version_bigint = &BigInt::from(current_version());
         bytes.append(&mut compact_size::encode(byte_helpers::encode_bigint(version_bigint)));
-        bytes.append(&mut compact_size::encode(byte_helpers::base64_decode(address)?));
+        bytes.append(&mut compact_size::encode(byte_helpers::base64url_decode(address)?));
         let timestamp_bigint = &BigInt::from(timestamp.timestamp());
         bytes.append(&mut compact_size::encode(byte_helpers::encode_bigint(timestamp_bigint)));
         bytes.append(&mut compact_size::encode(byte_helpers::utf8_encode(asset_ref)));
@@ -61,7 +62,7 @@ impl ModelTxn {
         let decoded = compact_size::decode(bytes);
         let version = byte_helpers::decode_bigint(&decoded[0]);
         let version = version.to_string().parse::<i32>()?;
-        let address = byte_helpers::base64_encode(&decoded[1]);
+        let address = byte_helpers::base64url_encode(&decoded[1]);
         let timestamp = byte_helpers::decode_bigint(&decoded[2]);
         let timestamp = DateTime::from_timestamp(timestamp.to_string().parse::<i64>()?, 0)
                 .ok_or("Failed to parse timestamp")?;
@@ -85,7 +86,7 @@ impl ModelTxn {
 
     fn calculate_id(bytes: &Vec<u8>) -> String {
         let id = byte_helpers::sha3(&bytes);
-        byte_helpers::base64_encode(&id)
+        byte_helpers::base64url_encode(&id)
     }
     
     pub fn id(&self) -> &str { &self.id }

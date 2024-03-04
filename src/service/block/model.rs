@@ -12,6 +12,7 @@ use super::{ModelTxn, super::super::{
 
 fn current_version() -> i32 { 1 }
 
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct Model {
     id: String,
@@ -23,6 +24,7 @@ pub struct Model {
     bytes: Vec<u8>
 }
 
+#[allow(unused)]
 impl Model {
     pub async fn write(
         client: &S3Client,
@@ -30,12 +32,14 @@ impl Model {
         previous_id: &str,
         transactions: &Vec<ModelTxn>
     ) -> Result<Self, Box<dyn Error>> {
-        let mut transaction_bytes= vec![];
+        let mut transaction_ids= vec![];
+        let mut transaction_bytes = vec![];
         for txn in transactions { 
-            transaction_bytes.push(byte_helpers::base64_decode(txn.id())?) 
+            transaction_ids.push(byte_helpers::base64url_decode(txn.id())?);
+            transaction_bytes.push(txn.bytes().clone());
         }
 
-        let mut root_tree = MerkleTree::new(&transaction_bytes);
+        let mut root_tree = MerkleTree::new(&transaction_ids);
         root_tree.build();
         let transaction_root = root_tree.root()
             .clone()
@@ -48,11 +52,12 @@ impl Model {
         let timestamp = Utc::now();
         let timestamp_bigint = &BigInt::from(Utc::now().timestamp());
         bytes.append(&mut compact_size::encode(byte_helpers::encode_bigint(timestamp_bigint)));
-        bytes.append(&mut compact_size::encode(byte_helpers::base64_decode(previous_id)?));
+        bytes.append(&mut compact_size::encode(byte_helpers::base64url_decode(previous_id)?));
         bytes.append(&mut compact_size::encode(transaction_root.clone()));
         let num_transactions = BigInt::from(transactions.len());
         bytes.append(&mut compact_size::encode(byte_helpers::encode_bigint(&num_transactions)));
-        transaction_bytes.iter().for_each(|txn| bytes.append(&mut txn.clone()));
+        
+        transaction_bytes.iter().for_each(|txn| bytes.append(&mut compact_size::encode(txn.clone())));
 
         let id = Self::calculate_id(&bytes);
         client.write(&Self::path(owner, &id), &bytes).await?;
@@ -76,7 +81,7 @@ impl Model {
         let timestamp = byte_helpers::decode_bigint(&decoded[1]);
         let timestamp = DateTime::from_timestamp(timestamp.to_string().parse::<i64>()?, 0)
                 .ok_or("Failed to parse timestamp")?;
-        let previous_id = byte_helpers::base64_encode(&decoded[2]);
+        let previous_id = byte_helpers::base64url_encode(&decoded[2]);
         let transaction_root = byte_helpers::base64_encode(&decoded[3]);
         
         let num_transactions = byte_helpers::decode_bigint(&decoded[4]);
@@ -99,11 +104,11 @@ impl Model {
 
     fn calculate_id(bytes: &Vec<u8>) -> String {
         let id = byte_helpers::sha3(&bytes);
-        byte_helpers::base64_encode(&id)
+        byte_helpers::base64url_encode(&id)
     }
 
     fn path(owner: &Owner, id: &str) -> String {
-        format!("{}/{}/{}.block", owner.provider(), owner.address(), id)
+        format!("providers/{}/{}/blocks/{}.block", owner.provider(), owner.address(), id)
     }
 
     pub fn id(&self) -> &str { &self.id }

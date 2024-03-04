@@ -17,6 +17,7 @@ pub struct ModelTransaction {
     user_signature: String
 }
 
+#[allow(unused)]
 impl ModelTransaction {
     pub fn timestamp(&self) -> DateTime<Utc> { self.timestamp }
     pub fn asset_ref(&self) -> &str { &self.asset_ref }

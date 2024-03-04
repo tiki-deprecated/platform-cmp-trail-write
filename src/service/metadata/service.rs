@@ -17,6 +17,7 @@ pub struct Service {
     signers: Vec<Signer>
 }
 
+#[allow(unused)]
 impl Service {
     pub async fn initialize(
         client: &S3Client,
