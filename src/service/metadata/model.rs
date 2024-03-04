@@ -6,7 +6,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
-use super::{ ModelSigner, super::{ Owner, super::utils::S3Client }};
+use super::{ ModelSigner, super::super::{api::Owner, utils::S3Client }};
 
 fn current_version() -> i32 { 1 }
 
@@ -27,26 +27,26 @@ pub struct Model {
 
 impl Model {
     pub async fn write(
-        client: &S3Client, 
-        owner: &Owner, 
-        last_block: &str, 
-        blocks: Vec<String>, 
+        client: &S3Client,
+        owner: &Owner,
+        last_block: &str,
+        blocks: Vec<String>,
         signers: Vec<ModelSigner>) -> Result<Self, Box<dyn Error>> {
         let now = Utc::now();
-        let model = Self { 
-            version: current_version(), 
-            owner: owner.clone(), 
-            last_block: last_block.to_string(), 
-            blocks, 
-            signers, 
-            modified: now, created: now 
+        let model = Self {
+            version: current_version(),
+            owner: owner.clone(),
+            last_block: last_block.to_string(),
+            blocks,
+            signers,
+            modified: now, created: now
         };
         let path = Self::path(owner.provider(), owner.address());
         let body = serde_json::to_string(&model)?.as_bytes().to_vec();
         client.write(&path, &body).await?;
         Ok(model)
     }
-    
+
     pub async fn read(client: &S3Client, owner: &Owner) -> Result<Self, Box<dyn Error>> {
         let path = Self::path(owner.provider(), owner.address());
         let body = client.read(&path).await?;

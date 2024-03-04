@@ -6,7 +6,9 @@
 use std::error::Error;
 use chrono::{DateTime, Utc};
 use num_bigint::BigInt;
-use super::{ModelTxn, super::{Owner, super::utils::{S3Client, MerkleTree, byte_helpers, compact_size}}};
+use super::{ModelTxn, super::super::{
+    api::Owner, utils::{S3Client, MerkleTree, byte_helpers, compact_size}
+}};
 
 fn current_version() -> i32 { 1 }
 
@@ -22,8 +24,6 @@ pub struct Model {
 }
 
 impl Model {
-    //write and read are the pub fns
-
     pub async fn write(
         client: &S3Client,
         owner: &Owner,
@@ -31,7 +31,9 @@ impl Model {
         transactions: &Vec<ModelTxn>
     ) -> Result<Self, Box<dyn Error>> {
         let mut transaction_bytes= vec![];
-        for txn in transactions { transaction_bytes.push(txn.bytes().clone()) }
+        for txn in transactions { 
+            transaction_bytes.push(byte_helpers::base64_decode(txn.id())?) 
+        }
 
         let mut root_tree = MerkleTree::new(&transaction_bytes);
         root_tree.build();

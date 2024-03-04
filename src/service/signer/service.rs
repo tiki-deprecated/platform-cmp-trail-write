@@ -7,7 +7,7 @@ use std::error::Error;
 use chrono::{DateTime, Utc};
 use ring::rsa::KeyPair;
 use ring::signature;
-use super::{ Model, { super::Owner, super::super::utils::{ S3Client, byte_helpers }}};
+use super::{ Model, {super::super::{api::Owner, utils::{S3Client, byte_helpers}}}};
 
 pub struct Service {
     key_pair: KeyPair,

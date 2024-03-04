@@ -5,7 +5,7 @@
 
 use std::error::Error;
 use chrono::{DateTime, Utc};
-use super::{Model, ModelSigner, super::{Signer, Owner, super::utils::S3Client}};
+use super::{Model, ModelSigner, super::{Signer, super::{api::Owner, utils::S3Client}}};
 
 pub struct Service {
     version: i32,

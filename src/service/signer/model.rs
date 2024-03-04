@@ -6,7 +6,7 @@
 use std::error::Error;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use super::super::{ Owner, super::utils::S3Client };
+use super::super::{super::utils::S3Client};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
