@@ -3,6 +3,10 @@
  * MIT license. See LICENSE file in root directory.
  */
 
+mod block_model;
+mod model;
+mod service;
+
 use std::error::Error;
 use chrono::{DateTime, Utc};
 use num_bigint::BigInt;
@@ -11,7 +15,7 @@ use crate::utils::{byte_helpers, compact_size};
 fn current_version() -> i32 { 1 }
 
 #[derive(Debug)]
-pub struct BlockModel {
+pub struct Block {
     id: Option<String>,
     version: i32,
     timestamp: DateTime<Utc>,
@@ -20,9 +24,9 @@ pub struct BlockModel {
 }
 
 #[allow(unused)]
-impl BlockModel {
+impl Block {
     pub fn new(previous_hash: &str, transaction_root: &str) -> Self {
-        BlockModel {
+        Block {
             id: None,
             version: current_version(),
             timestamp: Utc::now(),
@@ -56,7 +60,7 @@ impl BlockModel {
                 .ok_or("Failed to parse timestamp")?;
         let previous_hash = byte_helpers::base64_encode(&decoded[2]);
         let transaction_root = byte_helpers::base64_encode(&decoded[3]);
-        Ok(BlockModel { id, version, timestamp, previous_hash, transaction_root })
+        Ok(Block { id, version, timestamp, previous_hash, transaction_root })
     }
 
     pub fn set_id_from_bytes(&mut self, bytes: &Vec<u8>) -> () {
@@ -80,10 +84,10 @@ impl BlockModel {
 #[cfg(test)]
 mod tests {
     use tokio_test::assert_ok;
-    use crate::features::block::block_model::BlockModel;
+    use crate::service::block::Block;
     use crate::utils::byte_helpers;
-    fn mock_block() -> BlockModel {
-        BlockModel::new(
+    fn mock_block() -> Block {
+        Block::new(
             &byte_helpers::base64_encode(&byte_helpers::utf8_encode("DUMMY PREVIOUS HASH")),
             &byte_helpers::base64_encode(&byte_helpers::utf8_encode("DUMMY TRANSACTION ROOT"))
         )
@@ -113,7 +117,7 @@ mod tests {
     fn deserialize() {
         let block = mock_block();
         let serialized = block.serialize().unwrap();
-        let res = BlockModel::deserialize(&serialized);
+        let res = Block::deserialize(&serialized);
 
         assert_ok!(&res);
         let res = res.unwrap();
