@@ -3,6 +3,8 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-pub mod block;
-pub mod metadata;
-pub mod transaction;
+mod model;
+use model::Model;
+
+mod service;
+pub use service::Service as Signer;

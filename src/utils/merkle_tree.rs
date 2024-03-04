@@ -4,7 +4,7 @@
  */
 
 use std::collections::HashMap;
-use crate::utils::byte_helpers;
+use super::byte_helpers;
 
 pub struct MerkleTree {
     proofs: HashMap<String, Vec<u8>>,
@@ -14,8 +14,13 @@ pub struct MerkleTree {
 }
 
 impl MerkleTree {
-    pub fn new(hashes: Vec<Vec<u8>>) -> Self {
-        MerkleTree { proofs: HashMap::<String, Vec<u8>>::new(), hashes, root: None, depth: 1}
+    pub fn new(hashes: &Vec<Vec<u8>>) -> Self {
+        Self {
+            proofs: HashMap::<String, Vec<u8>>::new(),
+            hashes: hashes.clone(),
+            root: None,
+            depth: 1
+        }
     }
 
     pub fn build(&mut self) -> () {
@@ -89,7 +94,7 @@ impl MerkleTree {
             hash_check.append(&mut hash_pair.to_vec());
         }
         let hash = byte_helpers::sha3(&hash_check);
-        if proof.len() > 33 { MerkleTree::validate(&hash, &proof[33..].to_vec(), root) }
+        if proof.len() > 33 { Self::validate(&hash, &proof[33..].to_vec(), root) }
         else { byte_helpers::base64_encode(&hash) == byte_helpers::base64_encode(root) }
     }
 
@@ -97,7 +102,7 @@ impl MerkleTree {
         let hash_b64 = byte_helpers::base64_encode(hash);
         let proof = self.proofs[&hash_b64].clone();
         let root = self.root.clone().expect("Missing root. Must first call .build()");
-        MerkleTree::validate(hash, &proof, &root)
+        Self::validate(hash, &proof, &root)
     }
 
     pub fn hashes(&self) -> &Vec<Vec<u8>> { &self.hashes }
@@ -108,14 +113,12 @@ impl MerkleTree {
 #[cfg(test)]
 mod tests {
     use uuid::Uuid;
-    use crate::utils::byte_helpers;
-    use crate::utils::merkle_tree::MerkleTree;
-
+    use super::{MerkleTree, byte_helpers};
 
     #[test]
     fn build_one() {
         let id = byte_helpers::sha3(&byte_helpers::utf8_encode(&Uuid::new_v4().to_string()));
-        let mut tree = MerkleTree::new(vec![id.clone()]);
+        let mut tree = MerkleTree::new(&vec![id.clone()]);
         tree.build();
 
         assert_eq!(true, tree.root.is_some());
@@ -133,7 +136,7 @@ mod tests {
             let id = byte_helpers::sha3(&byte_helpers::utf8_encode(&Uuid::new_v4().to_string()));
             hashes.push(id);
         }
-        let mut tree = MerkleTree::new(hashes.clone());
+        let mut tree = MerkleTree::new(&hashes);
         tree.build();
 
         assert_eq!(true, tree.root.is_some());
@@ -155,7 +158,7 @@ mod tests {
             let id = byte_helpers::sha3(&byte_helpers::utf8_encode(&Uuid::new_v4().to_string()));
             hashes.push(id);
         }
-        let mut tree = MerkleTree::new(hashes.clone());
+        let mut tree = MerkleTree::new(&hashes);
         tree.build();
 
         assert_eq!(true, tree.root.is_some());

@@ -4,18 +4,21 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-tokio = { version = "1.32.0", features = ["macros", "io-util"] }
-tokio-util = "0.7.8"
-tracing = { version = "0.1.37", features = ["log"] }
-tracing-subscriber = { version = "0.3.1", default-features = false, features = ["fmt"] }
-lambda_runtime = "0.9.0"
-aws_lambda_events = "0.13.0"
-chrono = "0.4.30"
+tokio = { version = "1.36.0", features = ["macros", "io-util"] }
+tokio-util = "0.7.10"
+tracing = { version = "0.1.40", features = ["log"] }
+tracing-subscriber = { version = "0.3.18", default-features = false, features = ["fmt"] }
+lambda_runtime = "0.10.0"
+aws_lambda_events = "0.15.0"
+chrono = "0.4.34"
 num-bigint = "0.4.4"
-base64 = "0.21.5"
-serde = "1.0.193"
-ring = "0.17.7"
+base64 = "0.21.7"
+serde = "1.0.197"
+serde_json = "1.0.114"
+ring = "0.17.8"
 sha3 = "0.10.8"
+aws-sdk-s3 = { version =  "1.17.0" , features = ["behavior-version-latest"] }
+aws-config = "1.1.7"
 
 [dev-dependencies]
 tokio-test = "0.4.3"

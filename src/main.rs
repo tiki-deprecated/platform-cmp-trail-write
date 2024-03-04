@@ -4,7 +4,7 @@
  */
 
 mod utils;
-mod features;
+mod service;
 
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use aws_lambda_events::{event::sqs::SqsEvent};

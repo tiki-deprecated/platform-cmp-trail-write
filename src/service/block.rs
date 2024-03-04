@@ -3,4 +3,8 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-pub mod transaction_model;
+mod model_txn;
+use model_txn::ModelTxn;
+
+mod model;
+use model::Model;

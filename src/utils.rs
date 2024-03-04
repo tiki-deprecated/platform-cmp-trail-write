@@ -8,6 +8,8 @@ pub mod compact_size;
 #[allow(unused)]
 pub mod byte_helpers;
 #[allow(unused)]
-pub mod rsa_facade;
+mod merkle_tree;
+pub use merkle_tree::MerkleTree;
 #[allow(unused)]
-pub mod merkle_tree;
+mod s3_client;
+pub use s3_client::S3Client;
