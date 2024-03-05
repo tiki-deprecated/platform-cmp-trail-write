@@ -5,7 +5,7 @@
 
 use std::error::Error;
 use chrono::{DateTime, Utc};
-use super::{Model, ModelSigner, super::{Signer, Owner, super::utils::S3Client}};
+use super::{Model, ModelSigner, super::{Signer, super::{api::Owner, utils::S3Client}}};
 
 pub struct Service {
     version: i32,
@@ -17,13 +17,14 @@ pub struct Service {
     signers: Vec<Signer>
 }
 
+#[allow(unused)]
 impl Service {
     pub async fn initialize(
         client: &S3Client,
         parent: Option<String>,
         owner: &Owner
     ) -> Result<Self, Box<dyn Error>> {
-        let last_block = parent.unwrap_or(String::from("0x00"));
+        let last_block = parent.unwrap_or("AA".to_string());
         let signer: Signer = Signer::get(client, owner).await?;
         let signers = vec![ModelSigner::new(signer.uri(), signer.created())];
         let model = Model::write(client, owner, &last_block, vec![], signers).await?;

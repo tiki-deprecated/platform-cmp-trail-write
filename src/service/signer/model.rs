@@ -6,7 +6,7 @@
 use std::error::Error;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use super::super::{ Owner, super::utils::S3Client };
+use super::super::{super::utils::S3Client};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -16,6 +16,7 @@ pub struct Model {
     created: DateTime<Utc>,
 }
 
+#[allow(unused)]
 impl Model {
     pub async fn write(client: &S3Client, path: &str, key: &str) -> Result<Self, Box<dyn Error>> {
         let model = Self { key: key.to_string(), created: Utc::now() };

@@ -3,13 +3,59 @@
  * MIT license. See LICENSE file in root directory.
  */
 
+use std::error::Error;
+use chrono::{DateTime, Utc};
+use super::{ModelTxn, Model, super::{Signer, super::{api::Owner, utils::{S3Client, byte_helpers}}}};
 
+pub struct Service {
+    id: Option<String>,
+    owner: Owner,
+    previous_id: String,
+    timestamp: Option<DateTime<Utc>>,
+    transactions: Vec<ModelTxn>
+}
 
-// txn id = let id = byte_helpers::sha3(bytes);
-// block id = let id = byte_helpers::sha3(bytes);
+#[allow(unused)]
+impl Service {
+    pub fn new(owner: &Owner, previous_id: &str) -> Self {
+        Service {
+            id: None,
+            owner: owner.clone(),
+            previous_id: previous_id.to_string(),
+            timestamp: None,
+            transactions: Vec::new()
+        }
+    }
 
+    pub fn add(
+        &mut self,
+        timestamp: DateTime<Utc>,
+        asset_ref: &str,
+        contents: &str,
+        user_signature: &str,
+        signer: &Signer
+    ) -> Result<&Self, Box<dyn Error>> {
+        let address = match self.owner.provider() {
+            None => byte_helpers::base64url_encode(&byte_helpers::utf8_encode( "mytiki.com")),
+            Some(provider) => { match self.owner.address() { 
+                None => byte_helpers::base64url_encode(&byte_helpers::utf8_encode(provider)), 
+                Some(address) => address.to_string() 
+            } } };
+        let txn = ModelTxn::new(&address, timestamp, asset_ref, contents, user_signature, signer)?;
+        self.transactions.push(txn);
+        Ok(self)
+    }
 
-// models should be for the persistence layer -> this is what we write/read
+    pub async fn write(&mut self, client: &S3Client) -> Result<&Self, Box<dyn Error>> {
+        let block = Model::write(client, &self.owner, &self.previous_id, &self.transactions).await?;
+        self.id = Some(block.id().to_string());
+        self.timestamp = Some(block.timestamp());
+        Ok(self)
+    }
 
-
-// service is for building and committing a block. 
+    pub fn id(&self) -> &Option<String> { &self.id }
+    pub fn owner(&self) -> &Owner { &self.owner }
+    pub fn previous_id(&self) -> &str { &self.previous_id }
+    pub fn timestamp(&self) -> Option<DateTime<Utc>> { self.timestamp }
+    pub fn transactions(&self) -> &Vec<ModelTxn> { &self.transactions }
+}

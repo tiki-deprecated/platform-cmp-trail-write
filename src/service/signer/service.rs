@@ -7,7 +7,7 @@ use std::error::Error;
 use chrono::{DateTime, Utc};
 use ring::rsa::KeyPair;
 use ring::signature;
-use super::{ Model, { super::Owner, super::super::utils::{ S3Client, byte_helpers }}};
+use super::{ Model, {super::super::{api::Owner, utils::{S3Client, byte_helpers}}}};
 
 pub struct Service {
     key_pair: KeyPair,
@@ -15,15 +15,16 @@ pub struct Service {
     uri: String
 }
 
+#[allow(unused)]
 impl Service {
     pub async fn create(client: &S3Client, owner: &Owner, key: &str) -> Result<Self, Box<dyn Error>> {
-        let path = Self::path(owner.provider());
+        let path = Self::path(owner);
         let model = Model::write(client, &path, key).await?;
         Ok(Self::from_model(&path, &model)?)
     }
 
     pub async fn get(client: &S3Client, owner: &Owner) -> Result<Self, Box<dyn Error>> {
-        Self::get_from_path(client, &Self::path(owner.provider())).await
+        Self::get_from_path(client, &Self::path(owner)).await
     }
 
     pub async fn get_from_path(client: &S3Client, path: &str) -> Result<Self, Box<dyn Error>> {
@@ -70,5 +71,10 @@ impl Service {
         }
     }
 
-    fn path(provider: &str) -> String { format!("{}.key", provider) }
+    fn path(owner: &Owner) -> String { 
+        match owner.provider() { 
+            Some(provider) => format!("providers/{}/sign.json", provider),
+            None => "providers/sign.json".to_string()
+        } 
+    }
 }

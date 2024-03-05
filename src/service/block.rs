@@ -8,3 +8,6 @@ use model_txn::ModelTxn;
 
 mod model;
 use model::Model;
+
+mod service;
+pub use service::Service as Block;

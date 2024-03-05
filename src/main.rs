@@ -5,6 +5,7 @@
 
 mod utils;
 mod service;
+mod api;
 
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 use aws_lambda_events::{event::sqs::SqsEvent};
@@ -16,10 +17,17 @@ async fn main() -> Result<(), Error> {
         .with_target(false)
         .without_time()
         .init();
-    run(service_fn(handle)).await
+    run(service_fn(catch_all)).await
 }
 
-pub async fn handle(event: LambdaEvent<SqsEvent>) -> Result<(), Error> {
+async fn catch_all(event: LambdaEvent<SqsEvent>) -> Result<(), Error> {
     tracing::debug!("{:?}", event);
-    Ok(())
+    match api::handle(event).await {
+        Ok(_) => Ok(()),
+        Err(e) => {
+            tracing::error!("{:?}", e);
+            Err(Error::from(e.to_string()))
+        }
+    }
 }
+
