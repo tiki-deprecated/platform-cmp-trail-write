@@ -18,13 +18,13 @@ pub struct Service {
 #[allow(unused)]
 impl Service {
     pub async fn create(client: &S3Client, owner: &Owner, key: &str) -> Result<Self, Box<dyn Error>> {
-        let path = Self::path(owner.provider());
+        let path = Self::path(owner);
         let model = Model::write(client, &path, key).await?;
         Ok(Self::from_model(&path, &model)?)
     }
 
     pub async fn get(client: &S3Client, owner: &Owner) -> Result<Self, Box<dyn Error>> {
-        Self::get_from_path(client, &Self::path(owner.provider())).await
+        Self::get_from_path(client, &Self::path(owner)).await
     }
 
     pub async fn get_from_path(client: &S3Client, path: &str) -> Result<Self, Box<dyn Error>> {
@@ -71,5 +71,10 @@ impl Service {
         }
     }
 
-    fn path(provider: &str) -> String { format!("providers/{}/sign.json", provider) }
+    fn path(owner: &Owner) -> String { 
+        match owner.provider() { 
+            Some(provider) => format!("providers/{}/sign.json", provider),
+            None => "providers/sign.json".to_string()
+        } 
+    }
 }

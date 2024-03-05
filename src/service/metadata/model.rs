@@ -42,14 +42,14 @@ impl Model {
             signers,
             modified: now, created: now
         };
-        let path = Self::path(owner.provider(), owner.address());
+        let path = Self::path(owner);
         let body = serde_json::to_string(&model)?.as_bytes().to_vec();
         client.write(&path, &body).await?;
         Ok(model)
     }
 
     pub async fn read(client: &S3Client, owner: &Owner) -> Result<Self, Box<dyn Error>> {
-        let path = Self::path(owner.provider(), owner.address());
+        let path = Self::path(owner);
         let body = client.read(&path).await?;
         let res:Self = serde_json::from_str(&String::from_utf8(body)?)?;
         Ok(res)
@@ -63,5 +63,15 @@ impl Model {
     pub fn modified(&self) -> DateTime<Utc> { self.modified }
     pub fn created(&self) -> DateTime<Utc> { self.created }
 
-    fn path(provider: &str, address: &str) -> String { format!("providers/{}/{}/metadata.json", provider, address) }
+    fn path(owner: &Owner) -> String { 
+        match owner.provider() { 
+            Some(provider) => {
+                match owner.address() {
+                    Some(address) => format!("providers/{}/{}/metadata.json", provider, address),
+                    None => format!("providers/{}/metadata.json", provider)
+                }
+            },
+            None => "providers/metadata.json".to_string()
+        } 
+    }
 }

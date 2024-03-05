@@ -4,8 +4,6 @@
  */
 
 mod signer;
-
-use std::env;
 use signer::Signer;
 
 mod metadata;
@@ -14,8 +12,8 @@ use metadata::Metadata;
 mod block;
 use block::Block;
 
-use std::error::Error;
-use super::{api::{Owner, Transaction}, utils::S3Client};
+use std::{error::Error, env};
+use super::{api::{Owner, Transaction, Initialize}, utils::S3Client};
 
 pub struct Service {
     client: S3Client,
@@ -39,11 +37,16 @@ impl Service {
         Self::new(&region, &bucket).await
     }
     
-    pub async fn write(&self, owner: &Owner, transactions: &Vec<Transaction>) -> Result<(), Box<dyn Error>> {
-        let mut metadata = Metadata::get(&self.client, owner).await?;
+    pub async fn write_block(&self, owner: &Owner, transactions: &Vec<Transaction>) -> Result<(), Box<dyn Error>> {
+        let metadata = Metadata::get(&self.client, owner).await;
+        let mut metadata = if metadata.is_err() {
+            let provider = Owner::new(&owner.provider().clone().ok_or("No provider")?)?;
+            let provider_meta = Metadata::get(&self.client, &provider).await?;
+            Metadata::initialize(&self.client, Some(provider_meta.last_block().to_string()), &provider).await?
+        } else { metadata? };
         let signer = metadata.signers()
             .get(metadata.signers().len() - 1)
-            .ok_or(format!("No signer found for provider: {}", owner.provider()))?;
+            .ok_or("No block signer found.")?;
         let mut block = Block::new(&owner, metadata.last_block());
         for transaction in transactions {
             block.add(
@@ -56,7 +59,30 @@ impl Service {
         }
         let block = block.write(&self.client).await?;
         let id = block.id().clone().ok_or("No id for block")?;
-        metadata.add_block(&self.client, &owner, &id).await?;
+        metadata.add_block(&self.client, owner, &id).await?;
+        Ok(())
+    }
+    
+    pub async fn initialize_provider(&self, owner: &Owner, initialize: &Initialize) -> Result<(), Box<dyn Error>> {
+        Signer::create(&self.client, owner, initialize.key()).await?;
+        
+        let no_owner = Owner::default();
+        let provider = Owner::new(&owner.provider().clone().ok_or("No provider")?)?;
+        
+        let no_owner_meta =  Metadata::get(&self.client, &no_owner).await;
+        let no_owner_meta = if no_owner_meta.is_err() { 
+            Metadata::initialize(&self.client, None, &no_owner).await?;
+            self.write_block(&no_owner, &vec![Transaction::default()]).await?;
+            Metadata::get(&self.client, &no_owner).await?
+        } else { no_owner_meta? };
+        
+        let provider_meta = Metadata::get(&self.client, &provider).await;
+        if provider_meta.is_err() {
+            Metadata::initialize(&self.client, Some(no_owner_meta.last_block().to_string()), &provider).await?;
+            self.write_block(&provider, &vec![Transaction::default()]).await?;
+            Metadata::get(&self.client, &provider).await?
+        } else { provider_meta? };
+        
         Ok(())
     }
 }

@@ -5,7 +5,7 @@
 
 use std::error::Error;
 use chrono::{DateTime, Utc};
-use super::{ModelTxn, Model, super::{Signer, super::{api::Owner, utils::S3Client}}};
+use super::{ModelTxn, Model, super::{Signer, super::{api::Owner, utils::{S3Client, byte_helpers}}}};
 
 pub struct Service {
     id: Option<String>,
@@ -35,24 +35,19 @@ impl Service {
         user_signature: &str,
         signer: &Signer
     ) -> Result<&Self, Box<dyn Error>> {
-        let txn = ModelTxn::new(
-            self.owner.address(),
-            timestamp,
-            asset_ref,
-            contents,
-            user_signature,
-            signer)?;
+        let address = match self.owner.provider() {
+            None => byte_helpers::base64url_encode(&byte_helpers::utf8_encode( "mytiki.com")),
+            Some(provider) => { match self.owner.address() { 
+                None => byte_helpers::base64url_encode(&byte_helpers::utf8_encode(provider)), 
+                Some(address) => address.to_string() 
+            } } };
+        let txn = ModelTxn::new(&address, timestamp, asset_ref, contents, user_signature, signer)?;
         self.transactions.push(txn);
         Ok(self)
     }
 
     pub async fn write(&mut self, client: &S3Client) -> Result<&Self, Box<dyn Error>> {
-        let block = Model::write(
-            client,
-            &self.owner,
-            &self.previous_id,
-            &self.transactions,
-        ).await?;
+        let block = Model::write(client, &self.owner, &self.previous_id, &self.transactions).await?;
         self.id = Some(block.id().to_string());
         self.timestamp = Some(block.timestamp());
         Ok(self)

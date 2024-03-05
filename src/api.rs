@@ -12,3 +12,10 @@ pub use model_owner::ModelOwner as Owner;
 
 mod model_transaction;
 pub use model_transaction::ModelTransaction as Transaction;
+
+mod model_initialize;
+pub use model_initialize::ModelInitialize as Initialize;
+
+mod model_msg_group;
+pub use model_msg_group::ModelMsgGroup as MsgGroup;
+pub use model_msg_group::ModelMsgGroupType as MsgGroupType;

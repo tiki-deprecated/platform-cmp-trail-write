@@ -19,6 +19,15 @@ pub struct ModelTransaction {
 
 #[allow(unused)]
 impl ModelTransaction {
+    pub fn default() -> Self {
+        ModelTransaction { 
+            timestamp: Utc::now(), 
+            asset_ref: "AA==".to_string(),
+            contents: "AA==".to_string(),
+            user_signature: "AA==".to_string()
+        }
+    }
+    
     pub fn timestamp(&self) -> DateTime<Utc> { self.timestamp }
     pub fn asset_ref(&self) -> &str { &self.asset_ref }
     pub fn contents(&self) -> &str { &self.contents }

@@ -108,7 +108,15 @@ impl Model {
     }
 
     fn path(owner: &Owner, id: &str) -> String {
-        format!("providers/{}/{}/blocks/{}.block", owner.provider(), owner.address(), id)
+        match owner.provider() {
+            Some(provider) => {
+                match owner.address() {
+                    Some(address) => format!("providers/{}/{}/blocks/{}.block", provider, address, id),
+                    None => format!("providers/{}/{}.block", provider, id)
+                }
+            },
+            None => format!("providers/{}.block", id)
+        }
     }
 
     pub fn id(&self) -> &str { &self.id }
