@@ -6,6 +6,9 @@
 use std::error::Error;
 use aws_config::BehaviorVersion;
 use aws_sdk_s3::Client;
+use md5::{Md5, Digest};
+use super::byte_helpers::base64_encode;
+
 pub struct S3Client {
     s3: Client,
     bucket: String
@@ -39,8 +42,16 @@ impl S3Client {
         body: &Vec<u8>,
     ) -> Result<(), Box<dyn Error>> {
         self.s3.put_object().bucket(&self.bucket).key(key)
+            .content_md5(Self::md5(body))
             .body(aws_sdk_s3::primitives::ByteStream::from(body.clone()))
             .send().await?;
         Ok(())
+    }
+
+    fn md5(bytes: &Vec<u8>) -> String {
+        let mut hasher = Md5::new();
+        hasher.update(bytes);
+        let res = hasher.finalize();
+        base64_encode(&res[..].to_vec())
     }
 }

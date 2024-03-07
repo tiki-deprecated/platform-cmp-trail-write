@@ -1,19 +1,71 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Ocean Trail Write Function
+Description: Core Trail Write Function
 
 Parameters:
-  Semver:
+  Name:
+    Description: Name of the project
+    Type: String
+    Default: core-trail-write
+  Version:
     Description: Semantic version number
     Type: String
     Default: 0.0.1
+  Log:
+    Description: Bucket name to store logs
+    Type: String
+    Default: mytiki-logs
 
 Resources:
+  Queue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub ${Name}.fifo
+      ContentBasedDeduplication: true
+      DeduplicationScope: messageGroup
+      FifoQueue: true
+      VisibilityTimeout: 900
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt DLQ.Arn
+        maxReceiveCount: 5
+
+  DLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+        QueueName: !Sub ${Name}-dlq.fifo
+        ContentBasedDeduplication: true
+        DeduplicationScope: messageGroup
+        FifoQueue: true
+
+  Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub mytiki-${Name}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - BucketKeyEnabled: true
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      ObjectLockEnabled: true
+      ObjectLockConfiguration:
+        ObjectLockEnabled: Enabled
+        Rule:
+          DefaultRetention:
+            Mode: GOVERNANCE
+            Days: 1
+      LoggingConfiguration:
+        DestinationBucketName: !Ref Log
+        LogFilePrefix: core-trail/
+      VersioningConfiguration:
+        Status: Enabled
+
   Function:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: rust-cargolambda
     Properties:
+      FunctionName: !Ref Name
+      Description: core-trail writer function
       CodeUri: ../..
       Handler: bootstrap
       Runtime: provided.al2
@@ -21,21 +73,27 @@ Resources:
       Timeout: 900
       Architectures:
         - x86_64
-      FunctionUrlConfig:
-        AuthType: NONE
-        InvokeMode: BUFFERED
-        Cors:
-          AllowCredentials: True
-          AllowOrigins:
-            - "*"
-          AllowMethods:
-            - GET
-            - POST
-
-  Version:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !GetAtt Function.Arn
-      Description: !Ref Semver
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 2
+      Tracing: Active
+      VersionDescription: !Ref Version
+      Environment:
+        Variables:
+          TIKI_BUCKET: !Ref Bucket
+          TIKI_REGION: !Ref AWS::Region
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt Queue.Arn
+            Enabled: true
+            ScalingConfig:
+              MaximumConcurrency: 25
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref Bucket
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - xray:PutTraceSegments
+                - xray:PutTelemetryRecords
+              Resource: "*"
