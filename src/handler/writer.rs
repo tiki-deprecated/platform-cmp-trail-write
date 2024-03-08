@@ -3,23 +3,15 @@
  * MIT license. See LICENSE file in root directory.
  */
 
-mod signer;
-use signer::Signer;
-
-mod metadata;
-use metadata::Metadata;
-
-mod block;
-use block::Block;
-
 use std::{error::Error, env};
-use super::{api::{Owner, Transaction, Initialize}, utils::S3Client};
+use super::{Transaction, Initialize};
+use mytiki_core_trail_storage::{S3Client, Metadata, Block, Signer, Owner};
 
-pub struct Service {
+pub struct Writer {
     client: S3Client,
 }
 
-impl Service {
+impl Writer {
     pub async fn new(region: &str, bucket: &str) -> Self {
         let client = S3Client::new(region, bucket).await;
         Self { client }
@@ -40,7 +32,7 @@ impl Service {
     pub async fn write_block(&self, owner: &Owner, transactions: &Vec<Transaction>) -> Result<(), Box<dyn Error>> {
         let metadata = Metadata::get(&self.client, owner).await;
         let mut metadata = if metadata.is_err() {
-            let provider = Owner::new(&owner.provider().clone().ok_or("No provider")?)?;
+            let provider = Owner::new(owner.provider().clone(), None);
             let provider_meta = Metadata::get(&self.client, &provider).await?;
             Metadata::initialize(&self.client, Some(provider_meta.last_block().to_string()), &provider).await?
         } else { metadata? };
@@ -66,8 +58,8 @@ impl Service {
     pub async fn initialize_provider(&self, owner: &Owner, initialize: &Initialize) -> Result<(), Box<dyn Error>> {
         Signer::create(&self.client, owner, initialize.key()).await?;
         
-        let no_owner = Owner::default();
-        let provider = Owner::new(&owner.provider().clone().ok_or("No provider")?)?;
+        let no_owner = Owner::new(None, None);
+        let provider = Owner::new(owner.provider().clone(), None);
         
         let no_owner_meta =  Metadata::get(&self.client, &no_owner).await;
         let no_owner_meta = if no_owner_meta.is_err() { 

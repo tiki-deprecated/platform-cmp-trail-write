@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct ModelInitialize {
+pub struct Initialize {
     #[serde(default = "Utc::now")]
     timestamp: DateTime<Utc>,
     #[serde(default)]
@@ -16,7 +16,7 @@ pub struct ModelInitialize {
 }
 
 #[allow(unused)]
-impl ModelInitialize {
+impl Initialize {
     pub fn timestamp(&self) -> DateTime<Utc> { self.timestamp }
     pub fn key(&self) -> &str { &self.key }
 }
