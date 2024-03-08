@@ -4,6 +4,7 @@
  */
 
 mod transaction;
+
 use transaction::Transaction;
 
 mod msg_group;
@@ -18,10 +19,11 @@ use writer::Writer;
 
 use aws_lambda_events::sqs::{SqsEvent, SqsMessage};
 use lambda_runtime::LambdaEvent;
-use core_trail_storage::Owner;
+use mytiki_core_trail_storage::Owner;
+use std::error::Error;
 
-pub async fn handle(event: LambdaEvent<SqsEvent>) -> Result<(), Box<dyn std::error::Error>> {
-    let service = Writer::new_from_env().await;
+pub async fn handle(event: LambdaEvent<SqsEvent>) -> Result<(), Box<dyn Error>> {
+    let writer = Writer::new_from_env().await;
 
     let group = event.payload.records
         .get(0)
@@ -32,12 +34,12 @@ pub async fn handle(event: LambdaEvent<SqsEvent>) -> Result<(), Box<dyn std::err
     let owner = sub_to_owner(&group.id());
 
     match group.typ()  {
-        MsgGroupType::Initialize => handle_init(service, owner, event.payload.records).await,
-        MsgGroupType::Transaction => handle_txn(service, owner, event.payload.records).await,
+        MsgGroupType::Initialize => handle_init(writer, owner, event.payload.records).await,
+        MsgGroupType::Transaction => handle_txn(writer, owner, event.payload.records).await,
     }
 }
 
-async fn handle_txn(writer: Writer, owner: Owner, records: Vec<SqsMessage>) -> Result<(), Box<dyn std::error::Error>> {
+async fn handle_txn(writer: Writer, owner: Owner, records: Vec<SqsMessage>) -> Result<(), Box<dyn Error>> {
     let mut transactions: Vec<Transaction> = vec![];
     for record in records {
         match record.body {
@@ -52,7 +54,7 @@ async fn handle_txn(writer: Writer, owner: Owner, records: Vec<SqsMessage>) -> R
     Ok(())
 }
 
-async fn handle_init(writer: Writer, owner: Owner, records: Vec<SqsMessage>) -> Result<(), Box<dyn std::error::Error>> {
+async fn handle_init(writer: Writer, owner: Owner, records: Vec<SqsMessage>) -> Result<(), Box<dyn Error>> {
     for record in records {
         match record.body {
             Some(body) => {
