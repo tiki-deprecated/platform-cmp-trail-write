@@ -19,6 +19,7 @@ Cargo.lock
 
 # IntelliJ
 .idea
+*.iml
 
 # CloudFlare
 node_modules
