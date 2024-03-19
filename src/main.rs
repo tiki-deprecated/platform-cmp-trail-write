@@ -4,9 +4,10 @@
  */
 
 mod handler;
+mod writer;
 
+use aws_lambda_events::event::sqs::SqsEvent;
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
-use aws_lambda_events::{event::sqs::SqsEvent};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -28,4 +29,3 @@ async fn catch_all(event: LambdaEvent<SqsEvent>) -> Result<(), Error> {
         }
     }
 }
-
