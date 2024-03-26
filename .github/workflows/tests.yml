@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  pull_request:
+    types: [ opened, synchronize ]
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+
+      - name: Setup Cargo Lambda
+        uses: zerj9/setup-cargo-lambda@v0.1.0
+
+      - uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: Validate AWS Template
+        run: |
+          cd infra/function
+          sam validate --lint
+
+      - name: Build AWS Template
+        run: |
+          cd infra/function
+          sam build
