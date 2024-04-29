@@ -1,3 +1,40 @@
 # Reference: https://github.com/repository-settings/app
+
 _extends: .github
 
+repository:
+  name: platform-cmp-trail-write
+  description: Write audit trail records to an immutable storage tree.
+  homepage: https://mytiki.com/platform/compliance
+  topics: compliance, audit, licensing
+  private: false
+  has_projects: true
+  has_discussions: false
+  has_issues: true
+
+teams:
+  - name: sysadmin
+    permission: admin
+  - name: engineering
+    permission: push
+  - name: product
+    permission: triage
+  - name: backend
+    permission: push
+
+environments:
+  - name: production
+
+branches:
+  - name: main
+    protection:
+      required_status_checks:
+        strict: true
+        contexts:
+          - Test
+
+milestones:
+  - title: 1.4.5
+    description: |
+      DRAFT
+    state: open
