@@ -34,7 +34,7 @@ branches:
           - Test
 
 milestones:
-  - title: 0.0.1
+  - title: 1.4.5
     description: |
       DRAFT
     state: open
