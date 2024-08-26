@@ -21,7 +21,7 @@ jobs:
         uses: goto-bus-stop/setup-zig@v2
 
       - name: Setup Cargo Lambda
-        uses: zerj9/setup-cargo-lambda@v0.1.0
+        uses: zerj9/setup-cargo-lambda@v0.1.1
 
       - uses: aws-actions/setup-sam@v2
         with:
